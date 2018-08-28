@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # specify the url
-base_url = 
+#base_url = 
 state_url = 'https://www.hockey-reference.com/friv/birthplaces.cgi?country=US&province=&state=AL'
 
 # query the website and return the html to the variable ‘page’
@@ -15,16 +15,24 @@ response = get(state_url)
 print(response.text[:100])
 
 # parse the html using beautiful soup and store in variable `soup`
-html_soup = BeautifulSoup(response.text, 'html.parser')
+soup = BeautifulSoup(response.text, 'html.parser')
 
-# identify table rows
-html_soup.find_all('tr')
-html_soup.find_all('tr', attrs={'data-row':'0'})
-player_rows = html_soup.find_all('tr', attrs={'data-row':True})
-html_soup.find_all(attrs={'data-row':lambda x: x and x.isdigit())
+# cull the multicolumn super-headers (e.g. goalie stats)
+for tr in soup.find_all("tr", {'class':'over_header'}): 
+    tr.decompose()
 
-result = html_soup.find_all(lambda tag: tag.name == 'tr' and tag.get('data-row') == 0)
-result = html_soup.find_all(lambda tag: tag.name == 'tr' and tag.get('data-row') == '0')
+# identify table
+table = soup.find_all('table')
+
+# split out our table rows
+rows = table.find('th')
+
+#
+for row in rows:
+    cells = row.findChildren('td')
+    for cell in cells:
+        value = cell.string
+        print("The value in this cell is %s" % value)
 
 print(type(player_rows))
 print(len(player_rows))
